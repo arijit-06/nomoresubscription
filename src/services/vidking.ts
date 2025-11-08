@@ -6,7 +6,7 @@ export const generateEmbedUrl = (
   tmdbId: number,
   type: 'movie' | 'tv'
 ): string => {
-  return `https://www.vidking.net/embed/${type}/${tmdbId}`;
+  return `https://www.vidking.net/embed/${type}/${tmdbId}?autoPlay=true&color=e50914`;
 };
 
 export const generateTVEmbedUrl = (
@@ -14,7 +14,7 @@ export const generateTVEmbedUrl = (
   season: number,
   episode: number
 ): string => {
-  return `https://www.vidking.net/embed/tv/${tmdbId}/${season}/${episode}`;
+  return `https://www.vidking.net/embed/tv/${tmdbId}/${season}/${episode}?autoPlay=true&color=e50914&nextEpisode=true&episodeSelector=true`;
 };
 
 export const parseProgressEvent = (event: MessageEvent): ProgressEvent | null => {

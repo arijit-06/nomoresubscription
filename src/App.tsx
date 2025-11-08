@@ -15,6 +15,7 @@ import BrowsePage from './pages/BrowsePage';
 import MyListPage from './pages/MyListPage';
 import SearchPage from './pages/SearchPage';
 import WatchPage from './pages/WatchPage';
+import TVSelectPage from './pages/TVSelectPage';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 import LoadingSpinner from './components/Layout/LoadingSpinner';
 
@@ -64,6 +65,12 @@ const AppRoutes: React.FC = () => {
       <Route path="/search" element={
         <ProtectedRoute>
           <SearchPage />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/tv/:id" element={
+        <ProtectedRoute>
+          <TVSelectPage />
         </ProtectedRoute>
       } />
       

@@ -225,7 +225,12 @@ const HomePage: React.FC = () => {
 
   const handlePlay = (content: Content) => {
     const type = content.media_type || (content.title ? 'movie' : 'tv');
-    navigate(`/watch/${type}/${content.id}`);
+    if (type === 'movie') {
+      const url = `https://www.vidking.net/embed/movie/${content.id}?autoPlay=true&color=e50914`;
+      window.open(url, '_blank');
+    } else {
+      navigate(`/tv/${content.id}`);
+    }
   };
 
   useEffect(() => {
