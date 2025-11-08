@@ -260,30 +260,7 @@ const HomePage: React.FC = () => {
       }
     } catch (err: any) {
       console.error('Failed to load content:', err);
-      
-      // Fallback content for demo
-      const fallbackRows = [
-        { 
-          title: 'Demo Content', 
-          content: [
-            {
-              id: 1,
-              title: 'Sample Movie',
-              overview: 'This is a sample movie for demo purposes.',
-              poster_path: null,
-              backdrop_path: null,
-              vote_average: 8.5,
-              genre_ids: [28, 12],
-              popularity: 100,
-              original_language: 'en'
-            }
-          ]
-        }
-      ];
-      
-      setContentRows(fallbackRows);
-      setHeroContent(fallbackRows[0].content[0]);
-      setError('Using demo content. Please check your TMDB API key for real content.');
+      setError(`Failed to load content: ${err.response?.data?.status_message || err.message}`);
     } finally {
       setLoading(false);
     }
@@ -297,8 +274,21 @@ const HomePage: React.FC = () => {
     return (
       <HomeContainer>
         <ErrorMessage>
-          <h2>Oops! Something went wrong</h2>
+          <h2>Connection Error</h2>
           <p>{error}</p>
+          <p>Check your internet connection and try again</p>
+          <RetryButton onClick={loadContent}>Retry</RetryButton>
+        </ErrorMessage>
+      </HomeContainer>
+    );
+  }
+
+  if (contentRows.length === 0) {
+    return (
+      <HomeContainer>
+        <ErrorMessage>
+          <h2>No Content Available</h2>
+          <p>Unable to load content at this time</p>
           <RetryButton onClick={loadContent}>Try Again</RetryButton>
         </ErrorMessage>
       </HomeContainer>

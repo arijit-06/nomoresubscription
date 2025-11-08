@@ -2,15 +2,42 @@ import axios from 'axios';
 import { Content, ContentDetails, ContentResponse, Genre, Credits } from '../types/content.types';
 
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
-const BASE_URL = import.meta.env.VITE_TMDB_BASE_URL;
-export const IMAGE_BASE_URL = import.meta.env.VITE_TMDB_IMAGE_BASE;
+const BASE_URL = import.meta.env.VITE_TMDB_BASE_URL || 'https://api.themoviedb.org/3';
+export const IMAGE_BASE_URL = import.meta.env.VITE_TMDB_IMAGE_BASE || 'https://image.tmdb.org/t/p';
+
+// Validate environment variables
+if (!API_KEY) {
+  console.error('TMDB API key is missing. Please set VITE_TMDB_API_KEY in your environment variables.');
+}
 
 const tmdbApi = axios.create({
   baseURL: BASE_URL,
   params: {
     api_key: API_KEY,
   },
+  timeout: 10000,
+  headers: {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+  }
 });
+
+// Add request interceptor for better error handling
+tmdbApi.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.code === 'ECONNABORTED') {
+      error.message = 'Request timeout - please check your connection';
+    } else if (error.response?.status === 401) {
+      error.message = 'Invalid API key';
+    } else if (error.response?.status === 429) {
+      error.message = 'Too many requests - please try again later';
+    } else if (!error.response) {
+      error.message = 'Network error - please check your connection';
+    }
+    return Promise.reject(error);
+  }
+);
 
 // Cache for API responses (5 minutes)
 const cache = new Map<string, { data: any; timestamp: number }>();
@@ -30,6 +57,10 @@ const setCachedData = (key: string, data: any) => {
 
 // Generic API call with caching
 const apiCall = async <T>(endpoint: string, params?: Record<string, any>): Promise<T> => {
+  if (!API_KEY) {
+    throw new Error('TMDB API key is not configured');
+  }
+  
   const cacheKey = `${endpoint}?${new URLSearchParams(params).toString()}`;
   const cached = getCachedData(cacheKey);
   
@@ -37,9 +68,19 @@ const apiCall = async <T>(endpoint: string, params?: Record<string, any>): Promi
     return cached;
   }
 
-  const response = await tmdbApi.get(endpoint, { params });
-  setCachedData(cacheKey, response.data);
-  return response.data;
+  try {
+    const response = await tmdbApi.get(endpoint, { params });
+    setCachedData(cacheKey, response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error('TMDB API Error:', {
+      endpoint,
+      params,
+      error: error.response?.data || error.message,
+      status: error.response?.status
+    });
+    throw error;
+  }
 };
 
 // Trending content
