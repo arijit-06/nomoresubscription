@@ -1,0 +1,167 @@
+:root {
+  /* Netflix Brand Colors */
+  --netflix-red: #E50914;
+  --netflix-black: #141414;
+  --netflix-dark-gray: #2F2F2F;
+  --netflix-medium-gray: #808080;
+  --netflix-light-gray: #B3B3B3;
+  --netflix-white: #FFFFFF;
+  
+  /* Additional Colors */
+  --background-primary: #000000;
+  --background-secondary: #141414;
+  --background-tertiary: #2F2F2F;
+  --text-primary: #FFFFFF;
+  --text-secondary: #B3B3B3;
+  --text-muted: #808080;
+  --border-color: #333333;
+  --overlay-dark: rgba(0, 0, 0, 0.7);
+  --overlay-light: rgba(0, 0, 0, 0.4);
+  
+  /* Typography */
+  --font-family: 'Netflix Sans', 'Helvetica Neue', Arial, sans-serif;
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.875rem;   /* 14px */
+  --font-size-base: 1rem;     /* 16px */
+  --font-size-lg: 1.125rem;   /* 18px */
+  --font-size-xl: 1.25rem;    /* 20px */
+  --font-size-2xl: 1.5rem;    /* 24px */
+  --font-size-3xl: 1.875rem;  /* 30px */
+  --font-size-4xl: 2.25rem;   /* 36px */
+  --font-size-5xl: 3rem;      /* 48px */
+  --font-size-6xl: 4rem;      /* 64px */
+  
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+  
+  /* Spacing */
+  --spacing-xs: 0.25rem;   /* 4px */
+  --spacing-sm: 0.5rem;    /* 8px */
+  --spacing-md: 1rem;      /* 16px */
+  --spacing-lg: 1.5rem;    /* 24px */
+  --spacing-xl: 2rem;      /* 32px */
+  --spacing-2xl: 3rem;     /* 48px */
+  --spacing-3xl: 4rem;     /* 64px */
+  --spacing-4xl: 6rem;     /* 96px */
+  
+  /* Border Radius */
+  --radius-sm: 0.125rem;   /* 2px */
+  --radius-md: 0.25rem;    /* 4px */
+  --radius-lg: 0.5rem;     /* 8px */
+  --radius-xl: 1rem;       /* 16px */
+  --radius-full: 9999px;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  
+  /* Transitions */
+  --transition-fast: 0.15s ease-in-out;
+  --transition-normal: 0.3s ease-in-out;
+  --transition-slow: 0.5s ease-in-out;
+  
+  /* Z-Index */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+  --z-toast: 1080;
+  
+  /* Breakpoints */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+  
+  /* Layout */
+  --navbar-height: 68px;
+  --sidebar-width: 240px;
+  --content-max-width: 1920px;
+  --container-padding: var(--spacing-md);
+  
+  /* Content Row */
+  --row-gap: var(--spacing-2xl);
+  --card-gap: var(--spacing-sm);
+  --card-aspect-ratio: 16/9;
+  --poster-aspect-ratio: 2/3;
+  
+  /* Player */
+  --player-controls-height: 80px;
+  --progress-bar-height: 4px;
+  --volume-slider-width: 100px;
+  
+  /* Animation Durations */
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+  
+  /* Animation Easings */
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Dark theme overrides (default) */
+[data-theme="dark"] {
+  --background-primary: #000000;
+  --background-secondary: #141414;
+  --background-tertiary: #2F2F2F;
+  --text-primary: #FFFFFF;
+  --text-secondary: #B3B3B3;
+  --text-muted: #808080;
+  --border-color: #333333;
+}
+
+/* Light theme overrides (if needed) */
+[data-theme="light"] {
+  --background-primary: #FFFFFF;
+  --background-secondary: #F8F9FA;
+  --background-tertiary: #E9ECEF;
+  --text-primary: #000000;
+  --text-secondary: #6C757D;
+  --text-muted: #ADB5BD;
+  --border-color: #DEE2E6;
+}
+
+/* Responsive font sizes */
+@media (max-width: 768px) {
+  :root {
+    --font-size-5xl: 2rem;      /* 32px on mobile */
+    --font-size-4xl: 1.75rem;   /* 28px on mobile */
+    --font-size-3xl: 1.5rem;    /* 24px on mobile */
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  :root {
+    --text-secondary: #FFFFFF;
+    --border-color: #FFFFFF;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-fast: 0s;
+    --transition-normal: 0s;
+    --transition-slow: 0s;
+    --duration-fast: 0s;
+    --duration-normal: 0s;
+    --duration-slow: 0s;
+  }
+}

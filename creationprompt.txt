@@ -1,0 +1,678 @@
+PROJECT SPECIFICATION
+Build a pixel-perfect Netflix clone with complete functionality including video playback, user authentication, watchlist management, and progress tracking. The application must be fully functional on first deployment with zero additional configuration needed beyond API key integration.​
+
+TECHNICAL STACK
+Frontend Framework:
+
+Vite + React 18 + TypeScript
+
+React Router DOM v6 for routing
+
+Context API + useReducer for state management
+
+Axios for HTTP requests
+
+React Icons for UI icons
+
+Styling:
+
+CSS Modules or Styled Components
+
+CSS Grid and Flexbox for layouts
+
+CSS animations for hover effects and transitions
+
+Mobile-first responsive design (320px to 4K)
+
+External Services:
+
+TMDB API: Content metadata (movies, TV shows, cast, genres, trending)
+
+Vidking API: Video playback via iframe embedding
+
+Firebase: Authentication (email/password, Google OAuth)
+
+Supabase: User data storage (watchlist, viewing progress, profiles)
+
+COMPLETE FEATURE IMPLEMENTATION
+Authentication System
+Email/password signup and login with Firebase Auth
+
+Google OAuth social login
+
+Multiple user profiles (up to 5 per account)
+
+Profile avatars and name customization
+
+"Who's watching?" profile selection screen
+
+Auto-login with persisted sessions
+
+Protected routes requiring authentication
+
+Homepage Layout
+Hero Banner: Large featured content with auto-rotating carousel
+
+High-resolution backdrop image
+
+Title logo overlay
+
+Content description (truncated to 3 lines)
+
+Play and More Info buttons
+
+Auto-rotate every 5 seconds through trending content
+
+Content Rows (minimum 8 rows):
+
+Trending Now
+
+Top 10 in Your Country (with ranking badges)
+
+Popular on Netflix
+
+Continue Watching (with progress bars)
+
+New Releases
+
+Action Movies
+
+Drama Series
+
+Comedies
+
+Documentaries
+
+Genre-based rows dynamically generated
+
+Navigation Bar:
+
+Netflix logo (left)
+
+Menu items: Home, TV Shows, Movies, New & Popular, My List
+
+Search icon
+
+Notifications icon
+
+Profile dropdown (right)
+
+Background transitions from transparent to black on scroll
+
+Content Browsing
+Horizontal scrolling rows with smooth animations
+
+Show 6 items per viewport on desktop, 3 on tablet, 2 on mobile
+
+Infinite scroll loading more content as user scrolls
+
+Hover effects on thumbnails:
+
+Scale up by 1.3x
+
+Show title, match percentage, maturity rating
+
+Display quick action buttons (Play, Add to List, Like, More Info)
+
+Show 3-second muted preview trailer (bonus feature)
+
+Content Detail Page/Modal
+Modal overlay that opens on "More Info" click
+
+Large banner image at top
+
+Play and Add to List buttons
+
+Content metadata:
+
+Match percentage
+
+Year, duration/seasons, maturity rating
+
+Full description
+
+Cast and crew
+
+Genres
+
+Similar titles section at bottom
+
+Close button returns to previous browse state
+
+Video Player Integration
+Full-screen Vidking iframe player
+
+Custom controls overlay:
+
+Play/Pause toggle
+
+Progress bar with scrubbing
+
+Volume control
+
+Episode selector (for TV shows)
+
+Next Episode button (auto-appears 30 seconds before end)
+
+Skip Intro button (appears at predetermined timestamps)
+
+Audio & Subtitles settings
+
+Exit full-screen button
+
+Progress tracking via postMessage:
+
+Save progress every 10 seconds
+
+Resume from saved timestamp on next play
+
+Mark as "Watched" when 90% complete
+
+Update Continue Watching row in real-time
+
+My List Feature
+Add/remove content with heart icon
+
+Dedicated My List page showing all saved content
+
+Sync across devices via Supabase
+
+Empty state with call-to-action when list is empty
+
+Search Functionality
+Search bar expands on click
+
+Real-time search as user types (debounced 300ms)
+
+Search across movies and TV shows
+
+Display results in grid layout
+
+Filter options: Movies, TV Shows, All
+
+Show "No results" message with suggestions
+
+User Profile Management
+Profile selection screen after login
+
+Create/edit/delete profiles
+
+Each profile has:
+
+Custom avatar (choose from 20+ options)
+
+Display name
+
+Age rating restrictions (Kids, Teen, Adult)
+
+Independent watchlist and viewing history
+
+Personalized recommendations
+
+DETAILED IMPLEMENTATION GUIDE
+Project Structure
+text
+netflix-clone/
+├── public/
+│   └── netflix-logo.svg
+├── src/
+│   ├── assets/
+│   │   └── avatars/
+│   ├── components/
+│   │   ├── Auth/
+│   │   │   ├── Login.tsx
+│   │   │   ├── Signup.tsx
+│   │   │   └── ProtectedRoute.tsx
+│   │   ├── Browse/
+│   │   │   ├── Hero.tsx
+│   │   │   ├── ContentRow.tsx
+│   │   │   ├── ContentCard.tsx
+│   │   │   └── ContentModal.tsx
+│   │   ├── Layout/
+│   │   │   ├── Navbar.tsx
+│   │   │   └── Footer.tsx
+│   │   ├── Player/
+│   │   │   ├── VideoPlayer.tsx
+│   │   │   └── PlayerControls.tsx
+│   │   ├── Profile/
+│   │   │   ├── ProfileSelect.tsx
+│   │   │   ├── ProfileManager.tsx
+│   │   │   └── Avatar.tsx
+│   │   └── Search/
+│   │       ├── SearchBar.tsx
+│   │       └── SearchResults.tsx
+│   ├── context/
+│   │   ├── AuthContext.tsx
+│   │   ├── ProfileContext.tsx
+│   │   └── ContentContext.tsx
+│   ├── hooks/
+│   │   ├── useAuth.ts
+│   │   ├── useTMDB.ts
+│   │   ├── useWatchlist.ts
+│   │   └── useProgress.ts
+│   ├── services/
+│   │   ├── firebase.ts
+│   │   ├── supabase.ts
+│   │   ├── tmdb.ts
+│   │   └── vidking.ts
+│   ├── types/
+│   │   ├── content.types.ts
+│   │   ├── user.types.ts
+│   │   └── player.types.ts
+│   ├── utils/
+│   │   ├── constants.ts
+│   │   ├── helpers.ts
+│   │   └── storage.ts
+│   ├── pages/
+│   │   ├── HomePage.tsx
+│   │   ├── BrowsePage.tsx
+│   │   ├── MyListPage.tsx
+│   │   ├── SearchPage.tsx
+│   │   ├── WatchPage.tsx
+│   │   └── ProfilesPage.tsx
+│   ├── styles/
+│   │   ├── global.css
+│   │   └── variables.css
+│   ├── App.tsx
+│   └── main.tsx
+├── .env.example
+├── .gitignore
+├── package.json
+├── tsconfig.json
+└── vite.config.ts
+Environment Variables Setup
+Create .env file with placeholders:
+
+text
+VITE_TMDB_API_KEY=your_tmdb_api_key_here
+VITE_TMDB_BASE_URL=https://api.themoviedb.org/3
+VITE_TMDB_IMAGE_BASE=https://image.tmdb.org/t/p
+
+VITE_FIREBASE_API_KEY=your_firebase_key
+VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your_project_id
+
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+VITE_VIDKING_BASE_URL=https://www.vidking.net/embed
+Core Service Implementations
+TMDB Service (services/tmdb.ts):
+
+getTrending() - Fetch trending content
+
+getPopular(type: 'movie' | 'tv') - Popular content by type
+
+getGenres() - All available genres
+
+getByGenre(genreId) - Content filtered by genre
+
+getDetails(id, type) - Full content details
+
+getCredits(id, type) - Cast and crew
+
+getSimilar(id, type) - Similar recommendations
+
+search(query) - Search across all content
+
+Implement request caching with 5-minute expiration​
+
+Vidking Service (services/vidking.ts):
+
+generateEmbedUrl(tmdbId, type, options) - Create iframe URL
+
+parseProgressEvent(event) - Parse postMessage data
+
+Handle episode navigation for TV series
+
+Apply custom color themes dynamically
+
+Firebase Service (services/firebase.ts):
+
+Initialize Firebase app
+
+Email/password authentication methods
+
+Google OAuth provider setup
+
+Session persistence
+
+User state observer
+
+Supabase Service (services/supabase.ts):
+
+Initialize Supabase client
+
+Database schemas:
+
+profiles table: userId, profileId, name, avatar, ageRating
+
+watchlist table: userId, profileId, contentId, contentType, addedAt
+
+viewing_progress table: userId, profileId, contentId, contentType, progress, timestamp, duration, season, episode
+
+CRUD operations for all tables
+
+Real-time subscriptions for live updates
+
+State Management Architecture
+AuthContext:
+
+Current user authentication state
+
+Login/logout methods
+
+Loading states
+
+Error handling
+
+ProfileContext:
+
+Selected profile
+
+All profiles for current user
+
+Profile switching logic
+
+Profile CRUD operations
+
+ContentContext:
+
+Cached TMDB data
+
+Current browse category
+
+Search results
+
+Watchlist data
+
+Viewing progress map
+
+Normalized state structure using byId and allIds patterns​
+
+Component Implementation Details
+Hero Component:
+
+typescript
+interface HeroProps {
+  content: Content;
+  onPlayClick: () => void;
+  onInfoClick: () => void;
+}
+Fetch random trending content
+
+Display backdrop with gradient overlay
+
+Animated fade transitions between items
+
+Responsive text sizing
+
+Button hover states with icon animations
+
+ContentRow Component:
+
+typescript
+interface ContentRowProps {
+  title: string;
+  content: Content[];
+  showRankings?: boolean;
+  onItemClick: (content: Content) => void;
+}
+Horizontal scroll container
+
+Lazy load images with IntersectionObserver
+
+Smooth scroll animations
+
+Handle arrow navigation controls
+
+Display numbered rankings for Top 10
+
+ContentCard Component:
+
+typescript
+interface ContentCardProps {
+  content: Content;
+  rank?: number;
+  showProgress?: boolean;
+  progress?: number;
+  onClick: () => void;
+}
+Poster image with fallback
+
+Hover scale animation
+
+Show progress bar if showProgress prop
+
+Quick action buttons overlay
+
+Match percentage badge
+
+VideoPlayer Component:
+
+typescript
+interface VideoPlayerProps {
+  tmdbId: string;
+  type: 'movie' | 'tv';
+  season?: number;
+  episode?: number;
+  startTime?: number;
+}
+Vidking iframe integration
+
+PostMessage event listener setup
+
+Progress tracking every 10 seconds
+
+Auto-save to Supabase
+
+Next episode auto-play countdown
+
+Custom controls overlay
+
+Keyboard shortcuts (Space, Arrow keys, F for fullscreen)
+
+Routing Configuration
+typescript
+<BrowserRouter>
+  <Routes>
+    <Route path="/login" element={<Login />} />
+    <Route path="/signup" element={<Signup />} />
+    <Route path="/profiles" element={<ProtectedRoute><ProfilesPage /></ProtectedRoute>} />
+    <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+    <Route path="/browse/:category" element={<ProtectedRoute><BrowsePage /></ProtectedRoute>} />
+    <Route path="/my-list" element={<ProtectedRoute><MyListPage /></ProtectedRoute>} />
+    <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
+    <Route path="/watch/:type/:id" element={<ProtectedRoute><WatchPage /></ProtectedRoute>} />
+  </Routes>
+</BrowserRouter>
+Styling Guidelines
+Color Variables:
+
+css
+:root {
+  --netflix-red: #E50914;
+  --netflix-black: #141414;
+  --netflix-dark-gray: #2F2F2F;
+  --netflix-medium-gray: #808080;
+  --netflix-light-gray: #B3B3B3;
+  --netflix-white: #FFFFFF;
+}
+Typography:
+
+Font family: Netflix Sans, Helvetica Neue, Arial
+
+Hero title: 48-72px bold
+
+Section titles: 20px bold
+
+Body text: 14-16px regular
+
+Animations:
+
+Card hover scale: 0.3s ease-in-out
+
+Modal open: 0.4s ease-out
+
+Scroll navigation: smooth behavior
+
+Loading spinners: Netflix-style rotating logo
+
+Responsive Breakpoints:
+
+Mobile: < 768px
+
+Tablet: 768px - 1024px
+
+Desktop: 1024px - 1920px
+
+Large Desktop: > 1920px
+
+Performance Optimizations
+Image Optimization:
+
+Use TMDB's responsive image sizes (w300, w500, w780, original)
+
+Lazy load with IntersectionObserver
+
+Blur placeholder during loading
+
+WebP format with fallback
+
+Code Splitting:
+
+Route-based lazy loading
+
+Dynamic imports for heavy components
+
+Separate vendor bundle
+
+Caching Strategy:
+
+Cache TMDB responses in memory (5 minutes)
+
+Store user preferences in localStorage
+
+Service Worker for offline content metadata
+
+Bundle Optimization:
+
+Tree shaking unused code
+
+Minify production build
+
+Compress assets with gzip
+
+Data Flow Examples
+Adding to Watchlist:
+
+User clicks heart icon on ContentCard
+
+Component calls useWatchlist hook method
+
+Hook updates Supabase watchlist table
+
+Context state updates with new data
+
+UI reflects change immediately (optimistic update)
+
+My List page auto-updates via real-time subscription
+
+Playing Content:
+
+User clicks Play button
+
+Navigate to /watch/movie/12345
+
+WatchPage fetches viewing progress from Supabase
+
+Generate Vidking embed URL with progress parameter
+
+Render VideoPlayer with iframe
+
+Listen for postMessage events
+
+Save progress every 10 seconds
+
+Update Continue Watching row on homepage
+
+DEPLOYMENT INSTRUCTIONS
+Vercel Deployment
+Connect GitHub repository to Vercel
+
+Configure environment variables in Vercel dashboard
+
+Set build command: npm run build
+
+Set output directory: dist
+
+Deploy - automatic on push to main branch
+
+Self-Hosted Deployment
+Build production: npm run build
+
+Serve dist folder with Nginx/Apache
+
+Configure reverse proxy for SPA routing
+
+Enable gzip compression
+
+Set security headers (CSP, X-Frame-Options)
+
+TESTING CHECKLIST
+ Login/Signup flow works
+
+ Profile creation and switching
+
+ Homepage loads with all content rows
+
+ Hero banner auto-rotates
+
+ Horizontal scroll navigation smooth
+
+ Card hover animations work
+
+ Modal opens with correct content details
+
+ Video playback starts correctly
+
+ Progress saves and resumes accurately
+
+ Add/remove from watchlist works
+
+ My List page shows saved content
+
+ Search returns relevant results
+
+ Navigation between all pages works
+
+ Responsive on mobile, tablet, desktop
+
+ No console errors
+
+ Loading states display properly
+
+SUCCESS CRITERIA
+The application is production-ready when:
+
+All features work without errors​
+
+UI matches Netflix's design language
+
+Video playback is smooth and reliable
+
+Authentication persists across sessions
+
+Data syncs across devices in real-time
+
+Responsive on all screen sizes
+
+Page load time < 3 seconds
+
+No broken images or missing content
+
+Accessible via keyboard navigation
+
+Cross-browser compatible (Chrome, Firefox, Safari, Edge)
+
+IMPLEMENTATION DIRECTIVE: Build this complete application following all specifications exactly. Generate all files, components, and services with full working code. Do not use placeholders or TODOs. Every feature must be fully functional on first run after API keys are added. The final product should be indistinguishable from Netflix in both appearance and functionality.​​
