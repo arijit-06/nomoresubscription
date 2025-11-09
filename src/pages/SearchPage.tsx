@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { FaSearch } from 'react-icons/fa';
+
 import { Content } from '../types/content.types';
 import * as tmdbService from '../services/tmdb';
 import { debounce } from '../utils/helpers';
@@ -24,7 +24,7 @@ const SearchInputContainer = styled.div`
 
 const SearchInput = styled.input`
   width: 100%;
-  padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-lg) 60px;
+  padding: var(--spacing-lg);
   background: var(--background-secondary);
   border: 2px solid var(--border-color);
   border-radius: var(--radius-lg);
@@ -41,14 +41,7 @@ const SearchInput = styled.input`
   }
 `;
 
-const SearchIcon = styled(FaSearch)`
-  position: absolute;
-  left: var(--spacing-lg);
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-muted);
-  font-size: var(--font-size-lg);
-`;
+
 
 const ResultsContainer = styled.div`
   max-width: 1200px;
@@ -166,7 +159,6 @@ const SearchPage: React.FC = () => {
     <SearchContainer>
       <SearchHeader>
         <SearchInputContainer>
-          <SearchIcon />
           <SearchInput
             type="text"
             placeholder="Search for movies and TV shows..."
