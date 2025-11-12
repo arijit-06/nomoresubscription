@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { FaPlay } from 'react-icons/fa';
 import * as tmdbService from '../services/tmdb';
@@ -112,10 +112,10 @@ const TVSelectPage: React.FC = () => {
   }, [selectedSeason, id, tvDetails]);
 
   const handlePlay = () => {
-    if (!id) return;
+    if (!id || !tvDetails) return;
     
-    const url = `https://www.vidking.net/embed/tv/${id}/${selectedSeason}/${selectedEpisode}?autoPlay=true&color=e50914&nextEpisode=true&episodeSelector=true`;
-    window.open(url, '_blank');
+    const seriesName = tvDetails.name.replace(/[^a-zA-Z0-9]/g, '_');
+    navigate(`/${seriesName}/${id}/${selectedSeason}/${selectedEpisode}`);
   };
 
   if (loading) {

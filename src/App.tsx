@@ -16,6 +16,14 @@ import MyListPage from './pages/MyListPage';
 import SearchPage from './pages/SearchPage';
 import WatchPage from './pages/WatchPage';
 import TVSelectPage from './pages/TVSelectPage';
+import MoviePlayerPage from './pages/MoviePlayerPage';
+import TVPlayerPage from './pages/TVPlayerPage';
+import BrowseMoviesPage from './pages/BrowseMoviesPage';
+import BrowseTVPage from './pages/BrowseTVPage';
+import NewPopularPage from './pages/NewPopularPage';
+import DiscoverSplitPage from './pages/DiscoverSplitPage';
+import DiscoverMoviesPage from './pages/DiscoverMoviesPage';
+import DiscoverTVPage from './pages/DiscoverTVPage';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 import LoadingSpinner from './components/Layout/LoadingSpinner';
 
@@ -50,9 +58,39 @@ const AppRoutes: React.FC = () => {
         </ProtectedRoute>
       } />
       
-      <Route path="/browse/:category" element={
+      <Route path="/browse/movies" element={
         <ProtectedRoute>
-          <BrowsePage />
+          <BrowseMoviesPage />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/browse/tv" element={
+        <ProtectedRoute>
+          <BrowseTVPage />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/browse/new" element={
+        <ProtectedRoute>
+          <NewPopularPage />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/discover" element={
+        <ProtectedRoute>
+          <DiscoverSplitPage />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/discover/movies" element={
+        <ProtectedRoute>
+          <DiscoverMoviesPage />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/discover/tv" element={
+        <ProtectedRoute>
+          <DiscoverTVPage />
         </ProtectedRoute>
       } />
       
@@ -71,6 +109,18 @@ const AppRoutes: React.FC = () => {
       <Route path="/tv/:id" element={
         <ProtectedRoute>
           <TVSelectPage />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/:movieName/:tmdbId" element={
+        <ProtectedRoute>
+          <MoviePlayerPage />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/:seriesName/:tmdbId/:seasonNum/:episodeNum" element={
+        <ProtectedRoute>
+          <TVPlayerPage />
         </ProtectedRoute>
       } />
       

@@ -1,58 +1,75 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { FaSearch } from 'react-icons/fa';
+
 import { Content } from '../types/content.types';
+import EpisodeSelectModal from '../components/EpisodeSelectModal';
 import * as tmdbService from '../services/tmdb';
 import { debounce } from '../utils/helpers';
 
 const SearchContainer = styled.div`
   min-height: 100vh;
   background: var(--background-primary);
-  padding: var(--spacing-4xl) var(--spacing-xl);
+  padding-top: 80px;
 `;
 
 const SearchHeader = styled.div`
-  max-width: 800px;
-  margin: 0 auto var(--spacing-3xl);
+  position: sticky;
+  top: 0;
+  background: linear-gradient(180deg, var(--background-primary) 0%, rgba(20,20,20,0.95) 100%);
+  padding: var(--spacing-lg) var(--spacing-xl);
+  backdrop-filter: blur(10px);
+  z-index: 100;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
 `;
 
 const SearchInputContainer = styled.div`
   position: relative;
-  margin-bottom: var(--spacing-xl);
+  max-width: 600px;
+  margin: 0 auto;
 `;
 
 const SearchInput = styled.input`
   width: 100%;
-  padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-lg) 60px;
-  background: var(--background-secondary);
-  border: 2px solid var(--border-color);
-  border-radius: var(--radius-lg);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 50px;
   color: var(--text-primary);
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-md);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
   
   &:focus {
+    background: rgba(255,255,255,0.15);
     border-color: var(--netflix-red);
     outline: none;
+    box-shadow: 0 0 20px rgba(229,9,20,0.3);
   }
   
   &::placeholder {
-    color: var(--text-muted);
+    color: rgba(255,255,255,0.6);
   }
 `;
 
-const SearchIcon = styled(FaSearch)`
-  position: absolute;
-  left: var(--spacing-lg);
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-muted);
-  font-size: var(--font-size-lg);
+const ContentContainer = styled.div`
+  padding: var(--spacing-xl);
 `;
 
 const ResultsContainer = styled.div`
   max-width: 1200px;
   margin: 0 auto;
+`;
+
+const GenreSection = styled.div`
+  margin-bottom: var(--spacing-3xl);
+`;
+
+const SectionTitle = styled.h2`
+  color: var(--text-primary);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-lg);
 `;
 
 const ResultsGrid = styled.div`
@@ -114,6 +131,13 @@ const SearchPage: React.FC = () => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Content[]>([]);
   const [loading, setLoading] = useState(false);
+  const [episodeModal, setEpisodeModal] = useState({ 
+    isOpen: false, 
+    tvShowId: 0, 
+    tvShowName: '' 
+  });
+  const [genreContent, setGenreContent] = useState<{ movies: Content[], tvShows: Content[] }>({ movies: [], tvShows: [] });
+  const [contentLoading, setContentLoading] = useState(true);
 
   const searchContent = async (searchQuery: string) => {
     if (!searchQuery.trim()) {
@@ -138,14 +162,46 @@ const SearchPage: React.FC = () => {
     debouncedSearch(query);
   }, [query]);
 
+  useEffect(() => {
+    loadGenreContent();
+  }, []);
+
+  const loadGenreContent = async () => {
+    try {
+      setContentLoading(true);
+      const [popularMovies, popularTV] = await Promise.all([
+        tmdbService.getPopular('movie'),
+        tmdbService.getPopular('tv')
+      ]);
+      
+      setGenreContent({
+        movies: popularMovies.results.slice(0, 12),
+        tvShows: popularTV.results.slice(0, 12)
+      });
+    } catch (error) {
+      console.error('Failed to load genre content:', error);
+    } finally {
+      setContentLoading(false);
+    }
+  };
+
   const handlePlay = (content: Content) => {
     const type = content.media_type || (content.title ? 'movie' : 'tv');
+    const title = (content.title || content.name || 'Unknown').replace(/[^a-zA-Z0-9]/g, '_');
+    
     if (type === 'movie') {
-      const url = `https://www.vidking.net/embed/movie/${content.id}?autoPlay=true&color=e50914`;
-      window.open(url, '_blank');
+      navigate(`/${title}/${content.id}`);
     } else {
-      navigate(`/tv/${content.id}`);
+      setEpisodeModal({ 
+        isOpen: true, 
+        tvShowId: content.id, 
+        tvShowName: content.name || 'Unknown Show' 
+      });
     }
+  };
+
+  const closeEpisodeModal = () => {
+    setEpisodeModal({ isOpen: false, tvShowId: 0, tvShowName: '' });
   };
 
   const getImageUrl = (path: string | null): string => {
@@ -166,18 +222,17 @@ const SearchPage: React.FC = () => {
     <SearchContainer>
       <SearchHeader>
         <SearchInputContainer>
-          <SearchIcon />
           <SearchInput
             type="text"
-            placeholder="Search for movies and TV shows..."
+            placeholder="Search movies, shows, people..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
         </SearchInputContainer>
       </SearchHeader>
 
-      <ResultsContainer>
-        {loading && <div style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>Searching...</div>}
+      <ContentContainer>
+        {loading && <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: 'var(--spacing-xl)' }}>Searching...</div>}
         
         {!loading && query && results.length === 0 && (
           <NoResults>
@@ -187,24 +242,77 @@ const SearchPage: React.FC = () => {
         )}
         
         {results.length > 0 && (
-          <ResultsGrid>
-            {results.map((content) => (
-              <ContentCard
-                key={content.id}
-                style={{
-                  backgroundImage: `url(${getImageUrl(content.poster_path)})`
-                }}
-                onClick={() => handlePlay(content)}
-              >
-                <CardOverlay>
-                  <CardTitle>{getContentTitle(content)}</CardTitle>
-                  <CardYear>{getContentYear(content)}</CardYear>
-                </CardOverlay>
-              </ContentCard>
-            ))}
-          </ResultsGrid>
+          <ResultsContainer>
+            <ResultsGrid>
+              {results.map((content) => (
+                <ContentCard
+                  key={content.id}
+                  style={{
+                    backgroundImage: `url(${getImageUrl(content.poster_path)})`
+                  }}
+                  onClick={() => handlePlay(content)}
+                >
+                  <CardOverlay>
+                    <CardTitle>{getContentTitle(content)}</CardTitle>
+                    <CardYear>{getContentYear(content)}</CardYear>
+                  </CardOverlay>
+                </ContentCard>
+              ))}
+            </ResultsGrid>
+          </ResultsContainer>
         )}
-      </ResultsContainer>
+
+        {!query && !contentLoading && (
+          <ResultsContainer>
+            <GenreSection>
+              <SectionTitle>Popular Movies</SectionTitle>
+              <ResultsGrid>
+                {genreContent.movies.map((movie) => (
+                  <ContentCard
+                    key={movie.id}
+                    style={{
+                      backgroundImage: `url(${getImageUrl(movie.poster_path)})`
+                    }}
+                    onClick={() => handlePlay(movie)}
+                  >
+                    <CardOverlay>
+                      <CardTitle>{getContentTitle(movie)}</CardTitle>
+                      <CardYear>{getContentYear(movie)}</CardYear>
+                    </CardOverlay>
+                  </ContentCard>
+                ))}
+              </ResultsGrid>
+            </GenreSection>
+
+            <GenreSection>
+              <SectionTitle>Popular TV Shows</SectionTitle>
+              <ResultsGrid>
+                {genreContent.tvShows.map((show) => (
+                  <ContentCard
+                    key={show.id}
+                    style={{
+                      backgroundImage: `url(${getImageUrl(show.poster_path)})`
+                    }}
+                    onClick={() => handlePlay(show)}
+                  >
+                    <CardOverlay>
+                      <CardTitle>{getContentTitle(show)}</CardTitle>
+                      <CardYear>{getContentYear(show)}</CardYear>
+                    </CardOverlay>
+                  </ContentCard>
+                ))}
+              </ResultsGrid>
+            </GenreSection>
+          </ResultsContainer>
+        )}
+      </ContentContainer>
+      
+      <EpisodeSelectModal
+        isOpen={episodeModal.isOpen}
+        onClose={closeEpisodeModal}
+        tvShowId={episodeModal.tvShowId}
+        tvShowName={episodeModal.tvShowName}
+      />
     </SearchContainer>
   );
 };

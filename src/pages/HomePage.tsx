@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { Content } from '../types/content.types';
 import LoadingSpinner from '../components/Layout/LoadingSpinner';
+import ContentHoverCard from '../components/ContentHoverCard';
+import EpisodeSelectModal from '../components/EpisodeSelectModal';
 import * as tmdbService from '../services/tmdb';
 
 const HomeContainer = styled.div`
@@ -222,15 +224,30 @@ const HomePage: React.FC = () => {
   const [heroContent, setHeroContent] = useState<Content | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [episodeModal, setEpisodeModal] = useState({ 
+    isOpen: false, 
+    tvShowId: 0, 
+    tvShowName: '' 
+  });
+
 
   const handlePlay = (content: Content) => {
     const type = content.media_type || (content.title ? 'movie' : 'tv');
+    const title = (content.title || content.name || 'Unknown').replace(/[^a-zA-Z0-9]/g, '_');
+    
     if (type === 'movie') {
-      const url = `https://www.vidking.net/embed/movie/${content.id}?autoPlay=true&color=e50914`;
-      window.open(url, '_blank');
+      navigate(`/${title}/${content.id}`);
     } else {
-      navigate(`/tv/${content.id}`);
+      setEpisodeModal({ 
+        isOpen: true, 
+        tvShowId: content.id, 
+        tvShowName: content.name || 'Unknown Show' 
+      });
     }
+  };
+
+  const closeEpisodeModal = () => {
+    setEpisodeModal({ isOpen: false, tvShowId: 0, tvShowName: '' });
   };
 
   useEffect(() => {
@@ -267,7 +284,7 @@ const HomePage: React.FC = () => {
   };
 
   if (loading) {
-    return <LoadingSpinner text="Loading Netflix..." />;
+    return <LoadingSpinner text="Loading NoMoreSubscription..." />;
   }
 
   if (error) {
@@ -307,14 +324,17 @@ const HomePage: React.FC = () => {
   return (
     <HomeContainer>
       <Navbar>
-        <Logo>NETFLIX</Logo>
+        <Logo>
+          <img src="/nomoresubscription.png" alt="NoMoreSubscription" style={{ height: '32px' }} />
+        </Logo>
         <NavMenu>
           <NavItem onClick={() => navigate('/')}>Home</NavItem>
           <NavItem onClick={() => navigate('/browse/tv')}>TV Shows</NavItem>
           <NavItem onClick={() => navigate('/browse/movies')}>Movies</NavItem>
           <NavItem onClick={() => navigate('/browse/new')}>New & Popular</NavItem>
+          <NavItem onClick={() => navigate('/discover')}>Discover</NavItem>
           <NavItem onClick={() => navigate('/my-list')}>My List</NavItem>
-          <NavItem onClick={() => navigate('/search')}>🔍 Search</NavItem>
+          <NavItem onClick={() => navigate('/search')}>Search</NavItem>
         </NavMenu>
       </Navbar>
 
@@ -346,19 +366,31 @@ const HomePage: React.FC = () => {
             <RowTitle>{row.title}</RowTitle>
             <ContentGrid>
               {row.content.slice(0, 12).map((content: Content) => (
-                <ContentCard
+                <ContentHoverCard
                   key={content.id}
-                  style={{
-                    backgroundImage: `url(${getImageUrl(content.backdrop_path || content.poster_path)})`
-                  }}
-                  title={getContentTitle(content)}
-                  onClick={() => handlePlay(content)}
-                />
+                  content={content}
+                  onPlay={handlePlay}
+                >
+                  <ContentCard
+                    style={{
+                      backgroundImage: `url(${getImageUrl(content.backdrop_path || content.poster_path)})`
+                    }}
+                    title={getContentTitle(content)}
+                    onClick={() => handlePlay(content)}
+                  />
+                </ContentHoverCard>
               ))}
             </ContentGrid>
           </ContentRow>
         ))}
       </ContentSection>
+      
+      <EpisodeSelectModal
+        isOpen={episodeModal.isOpen}
+        onClose={closeEpisodeModal}
+        tvShowId={episodeModal.tvShowId}
+        tvShowName={episodeModal.tvShowName}
+      />
     </HomeContainer>
   );
 };
