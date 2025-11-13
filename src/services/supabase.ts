@@ -1,14 +1,41 @@
 import { createClient } from '@supabase/supabase-js';
 import { Profile, CreateProfileData, UpdateProfileData } from '../types/user.types';
 import { WatchlistItem, ViewingProgress } from '../types/content.types';
+import { env } from '../utils/env';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Input sanitization utility
+const sanitizeInput = (input: string): string => {
+  return input.replace(/[<>"'&]/g, (match) => {
+    const entities: Record<string, string> = {
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#x27;',
+      '&': '&amp;'
+    };
+    return entities[match] || match;
+  }).trim();
+};
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+// Validate UUID format
+const isValidUUID = (uuid: string): boolean => {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid);
+};
+
+// Validate user ID format (Firebase UID)
+const isValidUserId = (userId: string): boolean => {
+  return /^[a-zA-Z0-9]{28}$/.test(userId) && userId.length === 28;
+};
+
+export const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY);
 
 // Profile operations
 export const getProfiles = async (userId: string): Promise<Profile[]> => {
+  if (!isValidUserId(userId)) {
+    throw new Error('Invalid user ID format');
+  }
+  
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
@@ -23,9 +50,18 @@ export const getProfiles = async (userId: string): Promise<Profile[]> => {
 };
 
 export const createProfile = async (userId: string, profileData: CreateProfileData): Promise<Profile> => {
+  // Validate inputs
+  if (!isValidUserId(userId)) {
+    throw new Error('Invalid user ID format');
+  }
+  
+  if (!profileData.name || profileData.name.length > 50) {
+    throw new Error('Profile name must be 1-50 characters');
+  }
+  
   const profile = {
     userid: userId,
-    name: profileData.name,
+    name: sanitizeInput(profileData.name),
     avatar: profileData.avatar,
     agerating: profileData.ageRating,
     createdat: new Date().toISOString(),
@@ -44,8 +80,18 @@ export const createProfile = async (userId: string, profileData: CreateProfileDa
 
 export const updateProfile = async (profileData: UpdateProfileData): Promise<Profile> => {
   const { id, ...updates } = profileData;
+  
+  // Validate inputs
+  if (!isValidUUID(id)) {
+    throw new Error('Invalid profile ID format');
+  }
+  
+  if (updates.name && (updates.name.length === 0 || updates.name.length > 50)) {
+    throw new Error('Profile name must be 1-50 characters');
+  }
+  
   const updateData = {
-    name: updates.name,
+    name: updates.name ? sanitizeInput(updates.name) : undefined,
     avatar: updates.avatar,
     agerating: updates.ageRating,
     updatedat: new Date().toISOString()
@@ -89,6 +135,20 @@ export const addToWatchlist = async (
   contentId: number,
   contentType: 'movie' | 'tv'
 ): Promise<WatchlistItem> => {
+  // Validate inputs
+  if (!isValidUserId(userId)) {
+    throw new Error('Invalid user ID format');
+  }
+  if (!isValidUUID(profileId)) {
+    throw new Error('Invalid profile ID format');
+  }
+  if (!Number.isInteger(contentId) || contentId <= 0) {
+    throw new Error('Invalid content ID');
+  }
+  if (!['movie', 'tv'].includes(contentType)) {
+    throw new Error('Invalid content type');
+  }
+  
   const item = {
     userid: userId,
     profileid: profileId,

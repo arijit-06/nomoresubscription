@@ -169,41 +169,46 @@ export const useSearch = () => {
   return { data, loading, error, search, clearSearch };
 };
 
+// Optimized hook with lazy loading to prevent N+1 query problem
 export const useMultipleContent = () => {
   const [contentRows, setContentRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [rowsLoaded, setRowsLoaded] = useState(0);
 
   const fetchMultipleContent = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const [
-        trending,
-        popularMovies,
-        popularTV,
-        topRatedMovies,
-        topRatedTV,
-        nowPlaying,
-        upcoming,
-        airingToday,
-        onTheAir
-      ] = await Promise.all([
+      // Load critical rows FIRST (trending, popular movies)
+      const [trending, popularMovies] = await Promise.all([
         tmdbService.getTrending('day'),
         tmdbService.getPopular('movie'),
-        tmdbService.getPopular('tv'),
-        tmdbService.getTopRated('movie'),
-        tmdbService.getTopRated('tv'),
-        tmdbService.getNowPlaying(),
-        tmdbService.getUpcoming(),
-        tmdbService.getAiringToday(),
-        tmdbService.getOnTheAir()
       ]);
-
-      const rows = [
+      
+      // Set initial critical rows and show page immediately
+      setContentRows([
         { title: 'Trending Now', content: trending.results, type: 'trending' },
         { title: 'Popular Movies', content: popularMovies.results, type: 'popular' },
+      ]);
+      setLoading(false); // Show page now!
+      setRowsLoaded(2);
+      
+      // Load remaining rows in background
+      const [popularTV, topRatedMovies, topRatedTV, nowPlaying, upcoming, airingToday, onTheAir] = 
+        await Promise.all([
+          tmdbService.getPopular('tv'),
+          tmdbService.getTopRated('movie'),
+          tmdbService.getTopRated('tv'),
+          tmdbService.getNowPlaying(),
+          tmdbService.getUpcoming(),
+          tmdbService.getAiringToday(),
+          tmdbService.getOnTheAir()
+        ]);
+
+      // Add remaining rows to existing ones
+      setContentRows(prev => [...prev,
         { title: 'Popular TV Shows', content: popularTV.results, type: 'popular' },
         { title: 'Top Rated Movies', content: topRatedMovies.results, type: 'top_rated' },
         { title: 'Top Rated TV Shows', content: topRatedTV.results, type: 'top_rated' },
@@ -211,9 +216,8 @@ export const useMultipleContent = () => {
         { title: 'Upcoming Movies', content: upcoming.results, type: 'upcoming' },
         { title: 'Airing Today', content: airingToday.results, type: 'airing_today' },
         { title: 'On The Air', content: onTheAir.results, type: 'on_the_air' }
-      ];
-
-      setContentRows(rows);
+      ]);
+      setRowsLoaded(9);
     } catch (err: any) {
       setError(err.message || 'Failed to fetch content');
     } finally {
@@ -225,5 +229,5 @@ export const useMultipleContent = () => {
     fetchMultipleContent();
   }, [fetchMultipleContent]);
 
-  return { contentRows, loading, error, refetch: fetchMultipleContent };
+  return { contentRows, loading, error, rowsLoaded, refetch: fetchMultipleContent };
 };

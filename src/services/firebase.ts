@@ -9,14 +9,26 @@ import {
   onAuthStateChanged,
   User as FirebaseUser,
   setPersistence,
-  browserLocalPersistence
+  browserLocalPersistence,
+  AuthError
 } from 'firebase/auth';
 import { User } from '../types/user.types';
+import { env } from '../utils/env';
+
+// Input validation
+const validateEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email) && email.length <= 254;
+};
+
+const validatePassword = (password: string): boolean => {
+  return password.length >= 6 && password.length <= 128;
+};
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  apiKey: env.FIREBASE_API_KEY,
+  authDomain: env.FIREBASE_AUTH_DOMAIN,
+  projectId: env.FIREBASE_PROJECT_ID,
 };
 
 const app = initializeApp(firebaseConfig);
@@ -31,18 +43,72 @@ googleProvider.setCustomParameters({
 });
 
 export const signInWithEmail = async (email: string, password: string): Promise<User> => {
-  const result = await signInWithEmailAndPassword(auth, email, password);
-  return mapFirebaseUser(result.user);
+  // Validate inputs
+  if (!validateEmail(email)) {
+    throw new Error('Invalid email format');
+  }
+  if (!validatePassword(password)) {
+    throw new Error('Password must be 6-128 characters');
+  }
+  
+  try {
+    const result = await signInWithEmailAndPassword(auth, email, password);
+    return mapFirebaseUser(result.user);
+  } catch (error) {
+    const authError = error as AuthError;
+    // Sanitize error messages to prevent information leakage
+    switch (authError.code) {
+      case 'auth/user-not-found':
+      case 'auth/wrong-password':
+        throw new Error('Invalid email or password');
+      case 'auth/too-many-requests':
+        throw new Error('Too many failed attempts. Please try again later.');
+      default:
+        throw new Error('Authentication failed');
+    }
+  }
 };
 
 export const signUpWithEmail = async (email: string, password: string): Promise<User> => {
-  const result = await createUserWithEmailAndPassword(auth, email, password);
-  return mapFirebaseUser(result.user);
+  // Validate inputs
+  if (!validateEmail(email)) {
+    throw new Error('Invalid email format');
+  }
+  if (!validatePassword(password)) {
+    throw new Error('Password must be 6-128 characters');
+  }
+  
+  try {
+    const result = await createUserWithEmailAndPassword(auth, email, password);
+    return mapFirebaseUser(result.user);
+  } catch (error) {
+    const authError = error as AuthError;
+    switch (authError.code) {
+      case 'auth/email-already-in-use':
+        throw new Error('Email already registered');
+      case 'auth/weak-password':
+        throw new Error('Password is too weak');
+      default:
+        throw new Error('Registration failed');
+    }
+  }
 };
 
 export const signInWithGoogle = async (): Promise<User> => {
-  const result = await signInWithPopup(auth, googleProvider);
-  return mapFirebaseUser(result.user);
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    return mapFirebaseUser(result.user);
+  } catch (error) {
+    const authError = error as AuthError;
+    switch (authError.code) {
+      case 'auth/popup-closed-by-user':
+        throw new Error('Sign-in cancelled');
+      case 'auth/popup-blocked':
+        throw new Error('Popup blocked. Please allow popups and try again.');
+      default:
+        throw new Error('Google sign-in failed');
+    }
+  }
 };
 
 export const logout = async (): Promise<void> => {

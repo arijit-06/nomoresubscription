@@ -1,23 +1,26 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ProfileProvider } from './context/ProfileContext';
 import { ContentProvider } from './context/ContentContext';
 import { useAuth } from './context/AuthContext';
-import { useProfile } from './context/ProfileContext';
-
-// Components
-import Login from './pages/Login';
-import Signup from './pages/Signup';
-import ProfilesPage from './pages/ProfilesPage';
-import HomePage from './pages/HomePage';
-import BrowsePage from './pages/BrowsePage';
-import MyListPage from './pages/MyListPage';
-import SearchPage from './pages/SearchPage';
-import WatchPage from './pages/WatchPage';
-import TVSelectPage from './pages/TVSelectPage';
-import ProtectedRoute from './components/Auth/ProtectedRoute';
+import ErrorBoundary from './components/ErrorBoundary';
 import LoadingSpinner from './components/Layout/LoadingSpinner';
+import ProtectedRoute from './components/Auth/ProtectedRoute';
+
+// Initialize environment validation
+import './utils/env';
+
+// Lazy load components for code splitting
+const Login = lazy(() => import('./pages/Login'));
+const Signup = lazy(() => import('./pages/Signup'));
+const ProfilesPage = lazy(() => import('./pages/ProfilesPage'));
+const HomePage = lazy(() => import('./pages/HomePage'));
+const BrowsePage = lazy(() => import('./pages/BrowsePage'));
+const MyListPage = lazy(() => import('./pages/MyListPage'));
+const SearchPage = lazy(() => import('./pages/SearchPage'));
+const WatchPage = lazy(() => import('./pages/WatchPage'));
+const TVSelectPage = lazy(() => import('./pages/TVSelectPage'));
 
 // Styles
 import './styles/global.css';
@@ -30,25 +33,36 @@ const AppRoutes: React.FC = () => {
   }
 
   return (
-    <Routes>
-      {/* Public routes */}
-      <Route 
-        path="/login" 
-        element={!user ? <Login /> : <Navigate to="/" replace />} 
-      />
-      <Route 
-        path="/signup" 
-        element={!user ? <Signup /> : <Navigate to="/" replace />} 
-      />
+    <Suspense fallback={<LoadingSpinner />}>
+      <Routes>
+        {/* Public routes */}
+        <Route 
+          path="/login" 
+          element={!user ? (
+            <ErrorBoundary>
+              <Login />
+            </ErrorBoundary>
+          ) : <Navigate to="/" replace />} 
+        />
+        <Route 
+          path="/signup" 
+          element={!user ? (
+            <ErrorBoundary>
+              <Signup />
+            </ErrorBoundary>
+          ) : <Navigate to="/" replace />} 
+        />
 
       {/* Protected routes */}
 
       
-      <Route path="/" element={
-        <ProtectedRoute>
-          <HomePage />
-        </ProtectedRoute>
-      } />
+        <Route path="/" element={
+          <ProtectedRoute>
+            <ErrorBoundary>
+              <HomePage />
+            </ErrorBoundary>
+          </ProtectedRoute>
+        } />
       
       <Route path="/browse/:category" element={
         <ProtectedRoute>
@@ -86,25 +100,28 @@ const AppRoutes: React.FC = () => {
         </ProtectedRoute>
       } />
 
-      {/* Catch all route */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        {/* Catch all route */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
   );
 };
 
 const App: React.FC = () => {
   return (
-    <Router>
-      <AuthProvider>
-        <ProfileProvider>
-          <ContentProvider>
-            <div className="App">
-              <AppRoutes />
-            </div>
-          </ContentProvider>
-        </ProfileProvider>
-      </AuthProvider>
-    </Router>
+    <ErrorBoundary>
+      <Router>
+        <AuthProvider>
+          <ProfileProvider>
+            <ContentProvider>
+              <div className="App">
+                <AppRoutes />
+              </div>
+            </ContentProvider>
+          </ProfileProvider>
+        </AuthProvider>
+      </Router>
+    </ErrorBoundary>
   );
 };
 

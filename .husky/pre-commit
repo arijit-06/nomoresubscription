@@ -1,0 +1,20 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Prevent committing .env files
+if git diff --cached --name-only | grep -q "^\.env$"; then
+  echo "❌ ERROR: Attempting to commit .env file!"
+  echo "This file contains sensitive API keys and should never be committed."
+  echo "Please remove .env from staging area: git reset HEAD .env"
+  exit 1
+fi
+
+# Prevent committing files with potential secrets
+if git diff --cached --name-only | xargs grep -l "VITE_.*_KEY\|VITE_.*_SECRET" 2>/dev/null; then
+  echo "❌ ERROR: Files contain potential API keys!"
+  echo "Please review and remove any hardcoded credentials."
+  exit 1
+fi
+
+# Run pre-commit checks
+npm run pre-commit
